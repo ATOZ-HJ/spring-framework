@@ -34,6 +34,7 @@ package org.springframework.core.io;
  * @since 1.1.3
  * @see DefaultResourceLoader
  * @see org.springframework.context.support.FileSystemXmlApplicationContext
+ * @note 从文件系统中加载对应的Resource对象
  */
 public class FileSystemResourceLoader extends DefaultResourceLoader {
 
@@ -45,12 +46,16 @@ public class FileSystemResourceLoader extends DefaultResourceLoader {
 	 * @return the corresponding Resource handle
 	 * @see FileSystemResource
 	 * @see org.springframework.web.context.support.ServletContextResourceLoader#getResourceByPath
+	 *
+	 * @note 和新方法实现
 	 */
 	@Override
 	protected Resource getResourceByPath(String path) {
+		// 以 "/" 开头，进行截取
 		if (path.startsWith("/")) {
 			path = path.substring(1);
 		}
+		//调用内部类的构造方法
 		return new FileSystemContextResource(path);
 	}
 
@@ -58,6 +63,9 @@ public class FileSystemResourceLoader extends DefaultResourceLoader {
 	/**
 	 * FileSystemResource that explicitly expresses a context-relative path
 	 * through implementing the ContextResource interface.
+	 *
+	 * FileSystemContextResource 继承自FileSystemResource，构造方法也是调用FileSystemResource的构造方法
+	 * 实现 ContextResource
 	 */
 	private static class FileSystemContextResource extends FileSystemResource implements ContextResource {
 

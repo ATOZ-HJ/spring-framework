@@ -46,31 +46,18 @@ public interface ResourceLoader {
 
 
 	/**
-	 * Return a {@code Resource} handle for the specified resource location.
-	 * <p>The handle should always be a reusable resource descriptor,
-	 * allowing for multiple {@link Resource#getInputStream()} calls.
-	 * <p><ul>
-	 * <li>Must support fully qualified URLs, e.g. "file:C:/test.dat".
-	 * <li>Must support classpath pseudo-URLs, e.g. "classpath:test.dat".
-	 * <li>Should support relative file paths, e.g. "WEB-INF/test.dat".
-	 * (This will be implementation-specific, typically provided by an
-	 * ApplicationContext implementation.)
-	 * </ul>
-	 * <p>Note that a {@code Resource} handle does not imply an existing resource;
-	 * you need to invoke {@link Resource#exists} to check for existence.
-	 * @param location the resource location
-	 * @return a corresponding {@code Resource} handle (never {@code null})
-	 * @see #CLASSPATH_URL_PREFIX
-	 * @see Resource#exists()
-	 * @see Resource#getInputStream()
+	 * 根据路径获取资源，返回Resource对象
+	 * 1. 支持URL类型的资源 "file:C:/test.dat"
+	 * 2. ClassPath位置资源 "classpath:test.dat"
+	 * 3. 相对路径资源 "WEB-INF/test.dat"
+	 *
+	 * 根据不同类型的资源，会有不同的实现类
+	 *
 	 */
 	Resource getResource(String location);
 
 	/**
-	 * Expose the {@link ClassLoader} used by this {@code ResourceLoader}.
-	 * <p>Clients which need to access the {@code ClassLoader} directly can do so
-	 * in a uniform manner with the {@code ResourceLoader}, rather than relying
-	 * on the thread context {@code ClassLoader}.
+	 * 获取当前ResourceLoader使用的类加载器
 	 * @return the {@code ClassLoader}
 	 * (only {@code null} if even the system {@code ClassLoader} isn't accessible)
 	 * @see org.springframework.util.ClassUtils#getDefaultClassLoader()

@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
  * @since 3.0
  * @see Class#getResource(String)
  * @see ClassPathResource#ClassPathResource(String, Class)
+ * @note 根据给定的class对象以及class所在的路径返回指定的Resource对象
  */
 public class ClassRelativeResourceLoader extends DefaultResourceLoader {
 
@@ -45,6 +46,7 @@ public class ClassRelativeResourceLoader extends DefaultResourceLoader {
 
 	@Override
 	protected Resource getResourceByPath(String path) {
+		//直接调用内部类构造器
 		return new ClassRelativeContextResource(path, this.clazz);
 	}
 
@@ -52,6 +54,8 @@ public class ClassRelativeResourceLoader extends DefaultResourceLoader {
 	/**
 	 * ClassPathResource that explicitly expresses a context-relative path
 	 * through implementing the ContextResource interface.
+	 * 继承 ClassPathResource ，实现了 ContextResource，构造方法也是直接调用 ClassPathResource 的构造方法
+	 * 类似FileSystemResourceLoader中的 FileSystemContextResource内部类
 	 */
 	private static class ClassRelativeContextResource extends ClassPathResource implements ContextResource {
 

@@ -52,6 +52,7 @@ import org.springframework.core.io.ResourceLoader;
  * @see org.springframework.core.io.ResourceLoader
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ResourceLoaderAware
+ * @note 支持根据路径的匹配规则加载多个资源
  */
 public interface ResourcePatternResolver extends ResourceLoader {
 
@@ -72,6 +73,8 @@ public interface ResourcePatternResolver extends ResourceLoader {
 	 * @param locationPattern the location pattern to resolve
 	 * @return the corresponding {@code Resource} objects
 	 * @throws IOException in case of I/O errors
+	 *
+	 * 支持根据路径的匹配规则加载多个资源
 	 */
 	Resource[] getResources(String locationPattern) throws IOException;
 

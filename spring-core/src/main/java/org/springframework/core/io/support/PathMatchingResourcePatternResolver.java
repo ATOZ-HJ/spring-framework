@@ -179,6 +179,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.util.AntPathMatcher
  * @see org.springframework.core.io.ResourceLoader#getResource(String)
  * @see ClassLoader#getResources(String)
+ * @note 除了支持 ResourcePatternResolver 中的 classpath*: 匹配规则，还引入了  AntPathMatcher ant风格的路径匹配器
  */
 public class PathMatchingResourcePatternResolver implements ResourcePatternResolver {
 
@@ -201,8 +202,14 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	}
 
 
+	/**
+	 * 内置的资源加载器
+	 */
 	private final ResourceLoader resourceLoader;
 
+	/**
+	 * ant风格的路径匹配器
+	 */
 	private PathMatcher pathMatcher = new AntPathMatcher();
 
 
@@ -210,6 +217,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * Create a new PathMatchingResourcePatternResolver with a DefaultResourceLoader.
 	 * <p>ClassLoader access will happen via the thread context class loader.
 	 * @see org.springframework.core.io.DefaultResourceLoader
+	 *
+	 * 默认无参构造，指定DefaultResourceLoader对象为资源加载器
 	 */
 	public PathMatchingResourcePatternResolver() {
 		this.resourceLoader = new DefaultResourceLoader();
@@ -220,6 +229,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * <p>ClassLoader access will happen via the thread context class loader.
 	 * @param resourceLoader the ResourceLoader to load root directories and
 	 * actual resources with
+	 *
+	 * 支持通过构造函数指定资源加载器
 	 */
 	public PathMatchingResourcePatternResolver(ResourceLoader resourceLoader) {
 		Assert.notNull(resourceLoader, "ResourceLoader must not be null");

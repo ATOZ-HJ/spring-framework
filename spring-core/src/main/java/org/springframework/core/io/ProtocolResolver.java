@@ -27,7 +27,12 @@ import org.springframework.lang.Nullable;
  *
  * @author Juergen Hoeller
  * @since 4.3
- * @see DefaultResourceLoader#addProtocolResolver
+ * @see DefaultResourceLoader#addProtocolResolver 调用
+ *
+ * @note 可通过实现该接口，自定义自定义资源协议的解析策略，
+ * 用户可以 不通过 扩展DefaultResourceLoader，直接实现ProtocolResolver接口，即可自定义我们的资源加载解析策略
+ * 1.该接口spring没有实现，而是让用户自己去实现
+ *  DefaultResourceLoader#addProtocolResolver 方法可以将用户自定义的资源解析策略添加到
  */
 @FunctionalInterface
 public interface ProtocolResolver {
