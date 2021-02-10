@@ -243,6 +243,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * or {@code null} for using the thread context class loader
 	 * at the time of actual resource access
 	 * @see org.springframework.core.io.DefaultResourceLoader
+	 * 指定类加载器
 	 */
 	public PathMatchingResourcePatternResolver(@Nullable ClassLoader classLoader) {
 		this.resourceLoader = new DefaultResourceLoader(classLoader);
@@ -280,22 +281,40 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	}
 
 
+	/**
+	 * 对单个资源的获取，使用构造方法传入的或者默认的资源加载其
+	 * @param location
+	 * @return
+	 */
 	@Override
 	public Resource getResource(String location) {
 		return getResourceLoader().getResource(location);
 	}
 
+	/**
+	 * 根据路径规则进行匹配判断，获取多个资源
+	 * 判断逻辑：
+	 * 1.非 "classpath*:" 开头，不包含通配符，则使用resourceLoader加载
+	 * 2. "classpath*:" 开头，包含通配符，调用 findPathMatchingResources 方法
+	 * 3. "classpath*:" 开头，不包含通配符，调用 findAllClassPathResources 方法
+	 * 4. 非 "classpath*:" 开头 ，包含通配符 ，调用findPathMatchingResources 方法
+	 *
+	 * @param locationPattern the location pattern to resolve
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
+		//路径以 classpath*: 开头
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
-			// a class path resource (multiple resources for same name possible)
+			//判断 classpath*: 后的字符内容是否包含通配符
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
-				// a class path resource pattern
+				//调用方法解析通配符，返回符合条件的目录下的资源
 				return findPathMatchingResources(locationPattern);
 			}
 			else {
-				// all class path resources with the given name
+				//不包含通配符
 				return findAllClassPathResources(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
 			}
 		}
@@ -304,12 +323,13 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			// and on Tomcat only after the "*/" separator for its "war:" protocol.
 			int prefixEnd = (locationPattern.startsWith("war:") ? locationPattern.indexOf("*/") + 1 :
 					locationPattern.indexOf(':') + 1);
+			//包含通配符
 			if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
 				// a file pattern
 				return findPathMatchingResources(locationPattern);
 			}
 			else {
-				// a single resource with the given name
+				// 不包含通配符，不是 classpath*: 开头，则使用 resourceLoader 加载指定资源
 				return new Resource[] {getResourceLoader().getResource(locationPattern)};
 			}
 		}
@@ -501,15 +521,22 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @see #doFindPathMatchingJarResources
 	 * @see #doFindPathMatchingFileResources
 	 * @see org.springframework.util.PathMatcher
+	 *
+	 * 查询符合路径匹配规则下的所有资源
+	 *
 	 */
 	protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+		//获取到根目录
 		String rootDirPath = determineRootDir(locationPattern);
 		String subPattern = locationPattern.substring(rootDirPath.length());
+		//获取根路径下的所有资源
 		Resource[] rootDirResources = getResources(rootDirPath);
 		Set<Resource> result = new LinkedHashSet<>(16);
+		//遍历资源 ，根据资源的不同类型，调用不同的方法获取对应的资源
 		for (Resource rootDirResource : rootDirResources) {
 			rootDirResource = resolveRootDirResource(rootDirResource);
 			URL rootDirUrl = rootDirResource.getURL();
+			//bundle资源
 			if (equinoxResolveMethod != null && rootDirUrl.getProtocol().startsWith("bundle")) {
 				URL resolvedUrl = (URL) ReflectionUtils.invokeMethod(equinoxResolveMethod, null, rootDirUrl);
 				if (resolvedUrl != null) {
@@ -517,12 +544,15 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 				}
 				rootDirResource = new UrlResource(rootDirUrl);
 			}
+			//vfs资源类型
 			if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
 				result.addAll(VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, getPathMatcher()));
 			}
+			//jar类型资源
 			else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
 			}
+			//其他的资源类型
 			else {
 				result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
 			}
@@ -544,6 +574,11 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @param location the location to check
 	 * @return the part of the location that denotes the root directory
 	 * @see #retrieveMatchingFiles
+	 *
+	 * 获取带有通配符的路径的根路径
+	 *
+	 * 类似 classpath*:test/cc* ---->  classpath*:test/
+	 *
 	 */
 	protected String determineRootDir(String location) {
 		int prefixEnd = location.indexOf(':') + 1;

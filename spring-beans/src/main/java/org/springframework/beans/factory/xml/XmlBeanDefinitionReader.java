@@ -75,6 +75,8 @@ import org.springframework.util.xml.XmlValidationModeDetector;
  * @see BeanDefinitionRegistry
  * @see org.springframework.beans.factory.support.DefaultListableBeanFactory
  * @see org.springframework.context.support.GenericApplicationContext
+ *
+ * @note 将xml文件中的<bean></bean> 加载为BeanDefinition
  */
 public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
@@ -304,9 +306,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @param resource the resource descriptor for the XML file
 	 * @return the number of bean definitions found
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+	 *
+	 * 核心方法，将ResourceLoader加载得到的Resource对象加载为BeanDefinition
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		//对传入的资源内容进行编码
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
